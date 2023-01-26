@@ -9,10 +9,27 @@ function emitNotification(title: string, body: string) {
   nova.notifications.add(request);
 }
 
+function getSourcegraphUrl() {
+  let configUrl = nova.workspace.config.get(
+    "com.harrytwyford.sourcegraph.config.queryUrl",
+    "string"
+  );
+  if (!configUrl) {
+    emitNotification(
+      nova.localize("Failed to search in Sourcegraph"),
+      nova.localize("Please check that a valid query URL is set in Settings.")
+    );
+    return;
+  }
+  if (!configUrl.endsWith("/")) {
+    configUrl = configUrl + "/";
+  }
+  return configUrl + "-/editor";
+}
+
 nova.commands.register(
   "com.harrytwyford.sourcegraph.searchInSourcegraph",
   (editor) => {
-    console.log("start");
     let selectedRange = editor.selectedRange;
 
     if (selectedRange.empty) {
@@ -21,27 +38,26 @@ nova.commands.register(
     }
 
     if (selectedRange.empty) {
-      emitNotification("Failed to search in Sourcegraph", "No text detected.");
-      return;
-    }
-
-    const text = editor.getTextInRange(selectedRange);
-
-    const configUrl = nova.workspace.config.get(
-      "com.harrytwyford.sourcegraph.config.queryUrl",
-      "string"
-    );
-    if (!configUrl || !configUrl.includes("%s")) {
       emitNotification(
-        "Failed to search in Sourcegraph",
-        "Please check that a valid query URL is set in Settings."
+        nova.localize("Failed to search in Sourcegraph"),
+        nova.localize("No text detected.")
       );
       return;
     }
 
-    const queryUrl = configUrl.replace("%s", encodeURIComponent(text));
+    const query = editor.getTextInRange(selectedRange);
 
-    console.log(queryUrl);
-    nova.openURL(queryUrl.toString());
+    const fullPath = nova.workspace.activeTextEditor?.document.path;
+    let relativePath;
+    if (fullPath && nova.workspace.path) {
+      relativePath = fullPath.replace(nova.workspace.path, "");
+    }
+
+    let url = `${getSourcegraphUrl()}` + `?search=${encodeURIComponent(query)}`;
+    if (relativePath) {
+      url = url + `&file=${encodeURIComponent(relativePath)}`;
+    }
+    // console.log(url);
+    nova.openURL(url);
   }
 );

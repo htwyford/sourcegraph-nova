@@ -17,7 +17,7 @@
       "key": "com.harrytwyford.sourcegraph.config.queryUrl",
       "title": "Sourcegraph query URL",
       "type": "string",
-      "default": "https://sourcegraph.com/search?q=%s"
+      "default": "https://sourcegraph.com"
     }
   ],
 
@@ -26,14 +26,14 @@
       "key": "com.harrytwyford.sourcegraph.config.queryUrl",
       "title": "Sourcegraph query URL",
       "type": "string",
-      "default": "https://sourcegraph.com/search?q=%s"
+      "default": "https://sourcegraph.com"
     }
   ],
 
   "commands": {
     "editor": [
       {
-        "title": "Search on Sourcegraph",
+        "title": "Search Selection on Sourcegraph",
         "command": "com.harrytwyford.sourcegraph.searchInSourcegraph"
       }
     ]
