@@ -6,22 +6,14 @@ function emitNotification(title: string, body: string) {
   request.title = nova.localize(title);
   request.body = nova.localize(body);
 
-  const promise = nova.notifications.add(request);
-  promise.then(
-    (reply) => {
-      console.log(reply);
-    },
-    (error) => {
-      console.error(error);
-    }
-  );
+  nova.notifications.add(request);
 }
 
 nova.commands.register(
   "com.harrytwyford.sourcegraph.searchInSourcegraph",
   (editor) => {
+    console.log("start");
     let selectedRange = editor.selectedRange;
-    console.log("start)");
 
     if (selectedRange.empty) {
       editor.selectWordsContainingCursors();
@@ -35,20 +27,19 @@ nova.commands.register(
 
     const text = editor.getTextInRange(selectedRange);
 
-    const queryUrlStr = nova.workspace.config.get(
+    const configUrl = nova.workspace.config.get(
       "com.harrytwyford.sourcegraph.config.queryUrl",
       "string"
     );
-    if (!queryUrlStr) {
+    if (!configUrl || !configUrl.includes("%s")) {
       emitNotification(
         "Failed to search in Sourcegraph",
-        "Please check that a query URL is set in Settings."
+        "Please check that a valid query URL is set in Settings."
       );
       return;
     }
 
-    const queryUrl = new URL(queryUrlStr);
-    queryUrl.searchParams.set("q", text);
+    const queryUrl = configUrl.replace("%s", encodeURIComponent(text));
 
     console.log(queryUrl);
     nova.openURL(queryUrl.toString());
