@@ -101,3 +101,32 @@ nova.commands.register(
     );
   }
 );
+
+// TODO: Fetch remote URL and add it to the URL. Until that is done, this action is disabled.
+nova.commands.register("com.harrytwyford.sourcegraph.open", (editor) => {
+  const fullPath = nova.workspace.activeTextEditor?.document.path;
+  let relativePath;
+  if (fullPath && nova.workspace.path) {
+    relativePath = fullPath.replace(nova.workspace.path, "");
+  }
+
+  if (!relativePath) {
+    emitNotification(
+      nova.localize("Cannot complete search."),
+      nova.localize("Unable to find active file.")
+    );
+    return;
+  }
+
+  // TODO: Nova returns oddly high values for editor.selectedRange. For the line below,
+  // we get the value [3219, 3219].
+  const lineRange = editor.getLineRangeForRange(editor.selectedRange);
+  openUrlAndMaybeLog(
+    `${getSourcegraphUrl()}` +
+      `?file=${encodeURIComponent(relativePath)}` +
+      `&start_row=${encodeURIComponent(lineRange.start)}` +
+      `&start_col=${encodeURIComponent(String(editor.selectedRange.start))}` +
+      `&end_row=${encodeURIComponent(String(lineRange.end))}` +
+      `&end_col=${encodeURIComponent(String(editor.selectedRange.end))}`
+  );
+});
