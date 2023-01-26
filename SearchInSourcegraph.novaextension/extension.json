@@ -2,15 +2,11 @@
   "identifier": "com.harrytwyford.sourcegraph",
   "name": "Search on Sourcegraph",
   "organization": "Harry Twyford",
-  "description": "Lorem ipsum, dolor sit amet.",
+  "description": "Search for code on Sourcegraph.",
   "version": "1.0",
   "categories": ["commands"],
 
   "main": "main.dist.js",
-
-  "entitlements": {
-    "clipboard": true
-  },
 
   "config": [
     {
