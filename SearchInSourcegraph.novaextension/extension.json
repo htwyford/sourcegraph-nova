@@ -3,6 +3,8 @@
   "name": "Search on Sourcegraph",
   "organization": "Harry Twyford",
   "description": "Search for code on Sourcegraph.",
+  "repository": "https://github.com/htwyford/sourcegraph-nova",
+  "bugs": "https://github.com/htwyford/sourcegraph-nova",
   "version": "1.0",
   "categories": ["commands"],
 
