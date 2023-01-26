@@ -1,0 +1,41 @@
+{
+  "identifier": "com.harrytwyford.sourcegraph",
+  "name": "Search on Sourcegraph",
+  "organization": "Harry Twyford",
+  "description": "Lorem ipsum, dolor sit amet.",
+  "version": "1.0",
+  "categories": ["commands"],
+
+  "main": "main.js",
+
+  "entitlements": {
+    "clipboard": true
+  },
+
+  "config": [
+    {
+      "key": "com.harrytwyford.sourcegraph.config.queryUrl",
+      "title": "Sourcegraph query URL",
+      "type": "string",
+      "default": "https://sourcegraph.com/search?q=%s"
+    }
+  ],
+
+  "configWorkspace": [
+    {
+      "key": "com.harrytwyford.sourcegraph.config.queryUrl",
+      "title": "Sourcegraph query URL",
+      "type": "string",
+      "default": "https://sourcegraph.com/search?q=%s"
+    }
+  ],
+
+  "commands": {
+    "editor": [
+      {
+        "title": "Search on Sourcegraph",
+        "command": "com.harrytwyford.sourcegraph.searchInSourcegraph"
+      }
+    ]
+  }
+}

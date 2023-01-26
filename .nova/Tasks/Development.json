@@ -1,0 +1,9 @@
+{
+  "actions" : {
+    "build" : {
+      "enabled" : true,
+      "script" : "#!\/usr\/bin\/env sh\n\n# Ensure the build fails if TypeScript fails\nset -e\n\n# Lint TypeScript source code\nnpx tsc --noEmit --pretty\n\n# Bundle into JavaScript\nnpx esbuild \\\n  --bundle \\\n  --format=cjs \\\n  --outfile=SearchInSourcegraph.novaextension\/Scripts\/main.dist.js \\\n  src\/main.ts\n"
+    }
+  },
+  "openLogOnRun" : "fail"
+}
