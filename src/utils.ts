@@ -14,7 +14,7 @@ export function openUrlAndMaybeLog(url: string) {
   nova.openURL(url);
 }
 
-export function getSourcegraphUrl() {
+function getConfigUrl() {
   let configUrl = nova.workspace.config.get(
     "com.harrytwyford.sourcegraph.config.queryUrl",
     "string"
@@ -29,6 +29,53 @@ export function getSourcegraphUrl() {
   if (!configUrl.endsWith("/")) {
     configUrl = configUrl + "/";
   }
-  return;
-  configUrl + "-/editor";
+  return configUrl;
+}
+
+export function getQueryUrl(
+  query: string,
+  remoteURL?: string,
+  branch?: string,
+  fileRelative?: string
+) {
+  const url = getConfigUrl();
+  const parameters = {
+    search: encodeURIComponent(query),
+    remote_url: encodeURIComponent(remoteURL || ""),
+    branch: encodeURIComponent(branch || ""),
+    file: encodeURIComponent(fileRelative || ""),
+  };
+  const uri = new URL("/-/editor", url);
+  const parametersString = new URLSearchParams({ ...parameters }).toString();
+  uri.search = parametersString;
+  return uri.href;
+}
+
+/**
+ * Uses editor endpoint to construct Sourcegraph file URL
+ */
+export function getOpenUrl(
+  remoteURL: string,
+  branch: string,
+  fileRelative: string,
+  editor: TextEditor
+): string {
+  const url = getConfigUrl();
+
+  // TODO: Nova returns oddly high values for editor.selectedRange.
+  const lineRange = editor.getLineRangeForRange(editor.selectedRange);
+
+  const parameters = {
+    remote_url: encodeURIComponent(remoteURL),
+    branch: encodeURIComponent(branch),
+    file: encodeURIComponent(fileRelative),
+    start_row: encodeURIComponent(lineRange.start),
+    start_col: encodeURIComponent(editor.selectedRange.start),
+    end_row: encodeURIComponent(lineRange.end),
+    end_col: encodeURIComponent(editor.selectedRange.end),
+  };
+  const uri = new URL("/-/editor", url);
+  const parametersString = new URLSearchParams({ ...parameters }).toString();
+  uri.search = parametersString;
+  return uri.href;
 }

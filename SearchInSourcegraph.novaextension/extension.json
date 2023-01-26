@@ -8,6 +8,10 @@
   "version": "1.0",
   "categories": ["commands"],
 
+  "entitlements": {
+    "process": true
+  },
+
   "main": "main.dist.js",
 
   "config": [
@@ -16,6 +20,18 @@
       "title": "Sourcegraph query URL",
       "type": "string",
       "default": "https://sourcegraph.com"
+    },
+    {
+      "key": "com.harrytwyford.sourcegraph.config.defaultBranch",
+      "title": "Default branch",
+      "type": "string",
+      "default": "main"
+    },
+    {
+      "key": "com.harrytwyford.sourcegraph.config.gitExecutable",
+      "title": "Default branch",
+      "type": "string",
+      "default": "/usr/bin/env git"
     }
   ],
 
@@ -25,6 +41,18 @@
       "title": "Sourcegraph query URL",
       "type": "string",
       "default": "https://sourcegraph.com"
+    },
+    {
+      "key": "com.harrytwyford.sourcegraph.config.defaultBranch",
+      "title": "Default branch",
+      "type": "string",
+      "default": "main"
+    },
+    {
+      "key": "com.harrytwyford.sourcegraph.config.gitExecutable",
+      "title": "Default branch",
+      "type": "string",
+      "default": "/usr/bin/env git"
     }
   ],
 
@@ -33,6 +61,10 @@
       {
         "title": "Search Selection on Sourcegraph",
         "command": "com.harrytwyford.sourcegraph.searchSelection"
+      },
+      {
+        "title": "Open on Sourcegraph",
+        "command": "com.harrytwyford.sourcegraph.open"
       },
       {
         "title": "Search on Sourcegraph…",
