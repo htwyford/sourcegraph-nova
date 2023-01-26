@@ -9,6 +9,14 @@ function emitNotification(title: string, body: string) {
   nova.notifications.add(request);
 }
 
+function openUrlAndMaybeLog(url: string) {
+  if (nova.inDevMode()) {
+    console.log(url);
+  }
+
+  nova.openURL(url);
+}
+
 function getSourcegraphUrl() {
   let configUrl = nova.workspace.config.get(
     "com.harrytwyford.sourcegraph.config.queryUrl",
@@ -28,7 +36,7 @@ function getSourcegraphUrl() {
 }
 
 nova.commands.register(
-  "com.harrytwyford.sourcegraph.searchInSourcegraph",
+  "com.harrytwyford.sourcegraph.searchSelection",
   (editor) => {
     let selectedRange = editor.selectedRange;
 
@@ -57,7 +65,39 @@ nova.commands.register(
     if (relativePath) {
       url = url + `&file=${encodeURIComponent(relativePath)}`;
     }
-    // console.log(url);
-    nova.openURL(url);
+
+    openUrlAndMaybeLog(url);
+  }
+);
+
+nova.commands.register(
+  "com.harrytwyford.sourcegraph.searchString",
+  (editor) => {
+    const request = new NotificationRequest(
+      "com.harrytwyford.sourcegraph.enterString"
+    );
+
+    request.title = nova.localize("Enter a search string");
+    request.type = "input";
+    request.actions = [nova.localize("Search"), nova.localize("Cancel")];
+
+    const promise = nova.notifications.add(request);
+    promise.then(
+      (reply) => {
+        if (reply.textInputValue) {
+          const url =
+            `${getSourcegraphUrl()}` +
+            `?search=${encodeURIComponent(reply.textInputValue)}`;
+
+          openUrlAndMaybeLog(url);
+        }
+      },
+      (error) => {
+        emitNotification(
+          nova.localize("Could not complete search."),
+          nova.localize("An unknown error has occurred.")
+        );
+      }
+    );
   }
 );

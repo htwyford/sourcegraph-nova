@@ -34,7 +34,11 @@
     "editor": [
       {
         "title": "Search Selection on Sourcegraph",
-        "command": "com.harrytwyford.sourcegraph.searchInSourcegraph"
+        "command": "com.harrytwyford.sourcegraph.searchSelection"
+      },
+      {
+        "title": "Search on Sourcegraph…",
+        "command": "com.harrytwyford.sourcegraph.searchString"
       }
     ]
   }
