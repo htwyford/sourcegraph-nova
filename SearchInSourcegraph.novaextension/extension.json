@@ -5,7 +5,7 @@
   "description": "Search for code on Sourcegraph.",
   "repository": "https://github.com/htwyford/sourcegraph-nova",
   "bugs": "https://github.com/htwyford/sourcegraph-nova",
-  "version": "1.0",
+  "version": "1.1",
   "categories": ["commands"],
 
   "entitlements": {
@@ -24,12 +24,13 @@
     {
       "key": "com.harrytwyford.sourcegraph.config.defaultBranch",
       "title": "Default branch",
+      "description": "Used when the current branch cannot be determined.",
       "type": "string",
       "default": "main"
     },
     {
       "key": "com.harrytwyford.sourcegraph.config.gitExecutable",
-      "title": "Default branch",
+      "title": "Path to git executable",
       "type": "string",
       "default": "/usr/bin/env git"
     }
@@ -39,20 +40,18 @@
     {
       "key": "com.harrytwyford.sourcegraph.config.queryUrl",
       "title": "Sourcegraph query URL",
-      "type": "string",
-      "default": "https://sourcegraph.com"
+      "type": "string"
     },
     {
       "key": "com.harrytwyford.sourcegraph.config.defaultBranch",
-      "title": "Default branch",
-      "type": "string",
-      "default": "main"
+      "title": "Default git branch",
+      "description": "Used when the current branch cannot be determined.",
+      "type": "string"
     },
     {
       "key": "com.harrytwyford.sourcegraph.config.gitExecutable",
-      "title": "Default branch",
-      "type": "string",
-      "default": "/usr/bin/env git"
+      "title": "Path to git executable",
+      "type": "string"
     }
   ],
 

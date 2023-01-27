@@ -44,7 +44,6 @@ function gitPromise(options: TaskProcessAction): Promise<string> {
     }
     const process = new Process(gitExecutable, options);
     process.onStdout((line) => {
-      console.log("process output: " + line);
       resolve(line);
     });
 

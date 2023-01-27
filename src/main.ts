@@ -70,7 +70,6 @@ nova.commands.register(
   }
 );
 
-// TODO: Fetch remote URL and add it to the URL. Until that is done, this action is disabled.
 nova.commands.register("com.harrytwyford.sourcegraph.open", (editor) => {
   const fullPath = nova.workspace.activeTextEditor?.document.path;
   let relativePath;
