@@ -1,3 +1,8 @@
+import type {
+  Range as LspRange,
+  Position as LspPosition,
+} from "vscode-languageserver-protocol";
+
 export function emitNotification(title: string, body: string) {
   const request = new NotificationRequest(
     "com.harrytwyford.sourcegraph.notification"
@@ -26,8 +31,8 @@ function getConfigUrl() {
     );
     return;
   }
-  if (!configUrl.endsWith("/")) {
-    configUrl = configUrl + "/";
+  if (configUrl.endsWith("/")) {
+    configUrl = configUrl.slice(0, -1);
   }
   return configUrl;
 }
@@ -39,16 +44,16 @@ export function getQueryUrl(
   fileRelative?: string
 ) {
   const url = getConfigUrl();
-  const parameters = {
-    search: encodeURIComponent(query),
-    remote_url: encodeURIComponent(remoteURL || ""),
-    branch: encodeURIComponent(branch || ""),
-    file: encodeURIComponent(fileRelative || ""),
-  };
-  const uri = new URL("/-/editor", url);
-  const parametersString = new URLSearchParams({ ...parameters }).toString();
-  uri.search = parametersString;
-  return uri.href;
+  if (!url) {
+    return "";
+  }
+  return (
+    `${url}/-/editor` +
+    `?search=${encodeURIComponent(query)}` +
+    `&remote_url=${encodeURIComponent(remoteURL || "")}` +
+    `&branch=${encodeURIComponent(branch || "")}` +
+    `&file=${encodeURIComponent(fileRelative || "")}`
+  );
 }
 
 /**
@@ -61,21 +66,52 @@ export function getOpenUrl(
   editor: TextEditor
 ): string {
   const url = getConfigUrl();
+  if (!url) {
+    return "";
+  }
 
-  // TODO: Nova returns oddly high values for editor.selectedRange.
-  const lineRange = editor.getLineRangeForRange(editor.selectedRange);
+  const lspRange = rangeToLspRange(editor.document, editor.selectedRange);
+  if (!lspRange) {
+    emitNotification(
+      nova.localize("Unable to open file."),
+      nova.localize("Cannot find selected range.")
+    );
+    return "";
+  }
 
-  const parameters = {
-    remote_url: encodeURIComponent(remoteURL),
-    branch: encodeURIComponent(branch),
-    file: encodeURIComponent(fileRelative),
-    start_row: encodeURIComponent(lineRange.start),
-    start_col: encodeURIComponent(editor.selectedRange.start),
-    end_row: encodeURIComponent(lineRange.end),
-    end_col: encodeURIComponent(editor.selectedRange.end),
-  };
-  const uri = new URL("/-/editor", url);
-  const parametersString = new URLSearchParams({ ...parameters }).toString();
-  uri.search = parametersString;
-  return uri.href;
+  console.log(`lspRange: ${JSON.stringify(lspRange)}`);
+
+  return (
+    `${url}/-/editor` +
+    `?remote_url=${encodeURIComponent(remoteURL)}` +
+    `&branch=${encodeURIComponent(branch)}` +
+    `&file=${encodeURIComponent(fileRelative)}` +
+    `&start_row=${encodeURIComponent(lspRange.start.line)}` +
+    `&start_col=${encodeURIComponent(lspRange.start.character)}` +
+    `&end_row=${encodeURIComponent(lspRange.end.line)}` +
+    `&end_col=${encodeURIComponent(lspRange.end.character)}`
+  );
+}
+
+export function rangeToLspRange(
+  document: TextDocument,
+  range: Range
+): LspRange | null {
+  const fullContents = document.getTextInRange(new Range(0, document.length));
+  let chars = 0;
+  let startLspRange: LspPosition | undefined;
+  const lines = fullContents.split(document.eol);
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    const lineLength = lines[lineIndex].length + document.eol.length;
+    if (!startLspRange && chars + lineLength >= range.start) {
+      const character = range.start - chars;
+      startLspRange = { line: lineIndex, character };
+    }
+    if (startLspRange && chars + lineLength >= range.end) {
+      const character = range.end - chars;
+      return { start: startLspRange, end: { line: lineIndex, character } };
+    }
+    chars += lineLength;
+  }
+  return null;
 }

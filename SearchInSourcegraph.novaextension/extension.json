@@ -22,13 +22,6 @@
       "default": "https://sourcegraph.com"
     },
     {
-      "key": "com.harrytwyford.sourcegraph.config.defaultBranch",
-      "title": "Default branch",
-      "description": "Used when the current branch cannot be determined.",
-      "type": "string",
-      "default": "main"
-    },
-    {
       "key": "com.harrytwyford.sourcegraph.config.gitExecutable",
       "title": "Path to git executable",
       "type": "string",
@@ -40,18 +33,21 @@
     {
       "key": "com.harrytwyford.sourcegraph.config.queryUrl",
       "title": "Sourcegraph query URL",
-      "type": "string"
+      "type": "string",
+      "default": "https://sourcegraph.com"
     },
     {
       "key": "com.harrytwyford.sourcegraph.config.defaultBranch",
-      "title": "Default git branch",
+      "title": "Default branch",
       "description": "Used when the current branch cannot be determined.",
-      "type": "string"
+      "type": "string",
+      "default": "main"
     },
     {
       "key": "com.harrytwyford.sourcegraph.config.gitExecutable",
       "title": "Path to git executable",
-      "type": "string"
+      "type": "string",
+      "default": "/usr/bin/env git"
     }
   ],
 

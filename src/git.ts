@@ -42,13 +42,18 @@ function gitPromise(options: TaskProcessAction): Promise<string> {
       reject("Please specify a git executable in settings.");
       return;
     }
+    if (nova.inDevMode()) {
+      console.log(
+        `Git executable: ${gitExecutable}; options: ${JSON.stringify(options)}`
+      );
+    }
     const process = new Process(gitExecutable, options);
     process.onStdout((line) => {
-      resolve(line);
+      resolve(line.replace("\n", ""));
     });
 
     process.onStderr((line) => {
-      reject(line);
+      reject(line.replace("\n", ""));
     });
 
     process.start();
@@ -57,15 +62,13 @@ function gitPromise(options: TaskProcessAction): Promise<string> {
 
 /**
  * Returns the Git repository remote URL, the current branch, and the file path
- * relative to the repository root. Returns undefined if no remote is found
+ * relative to the repository root. Returns undefined if no remote is found.
  */
-export async function repoInfo(
-  filePath: string
-): Promise<RepositoryInfo | undefined> {
+export async function repoInfo(): Promise<RepositoryInfo | undefined> {
   try {
     // Determine repository root directory.
-    const fileDirectory = nova.workspace.activeTextEditor?.document.path;
-    if (!fileDirectory) {
+    const filePath = nova.workspace.activeTextEditor?.document.path;
+    if (!filePath) {
       emitNotification(
         nova.localize("Cannot complete actions."),
         nova.localize("Cannot find an open file.")
@@ -73,12 +76,10 @@ export async function repoInfo(
       return;
     }
 
-    const repoRoot = await gitHelpers.rootDirectory(fileDirectory);
+    const repoRoot = await gitHelpers.rootDirectory();
     // Determine file path relative to repository root, then replace slashes
     // as \\ does not work in Sourcegraph links
-    const fileRelative = filePath
-      .slice(repoRoot.length + 1)
-      .replace(/\\/g, "/");
+    const fileRelative = filePath.slice(repoRoot.length).replace(/\\/g, "/");
     let { branch, remoteName } = await gitRemoteNameAndBranch(
       repoRoot,
       gitHelpers
@@ -86,6 +87,14 @@ export async function repoInfo(
     const remoteURL = await gitHelpers.remoteUrl(remoteName, repoRoot);
 
     // TODO: Check if branch exists remotely on Sourcegraph.
+    console.log(
+      JSON.stringify({
+        remoteURL,
+        branch: branch || getDefaultBranch(),
+        fileRelative,
+        remoteName,
+      })
+    );
     return {
       remoteURL,
       branch: branch || getDefaultBranch(),
@@ -148,10 +157,10 @@ export const gitHelpers = {
    * Returns the repository root directory for any directory within the
    * repository.
    */
-  async rootDirectory(repoDirectory: string): Promise<string> {
+  async rootDirectory(): Promise<string> {
     const options = {
       args: ["rev-parse", "--show-toplevel"],
-      cwd: repoDirectory,
+      cwd: nova.workspace.path,
     };
 
     try {
@@ -241,7 +250,7 @@ export const gitHelpers = {
    */
   async upstreamAndBranch(repoDirectory: string): Promise<string> {
     var options = {
-      args: ["--version", "rev-parse", "--abbrev-ref", "HEAD@{upstream}"],
+      args: ["rev-parse", "--abbrev-ref", "HEAD@{upstream}"],
       cwd: repoDirectory,
     };
 

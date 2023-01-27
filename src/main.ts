@@ -27,7 +27,7 @@ nova.commands.register(
 
     const query = editor.getTextInRange(selectedRange);
 
-    const repoPromise = repoInfo(editor.document.uri.fsPath);
+    const repoPromise = repoInfo();
     repoPromise.then((repositoryInfo: RepositoryInfo | undefined) => {
       let url = "";
       if (!repositoryInfo) {
@@ -56,8 +56,25 @@ nova.commands.register(
     promise.then(
       (reply) => {
         if (reply.textInputValue) {
-          const url = getQueryUrl(reply.textInputValue);
-          openUrlAndMaybeLog(url);
+          const repoPromise = repoInfo();
+          repoPromise.then((repositoryInfo: RepositoryInfo | undefined) => {
+            if (!reply.textInputValue) {
+              return;
+            }
+            let url = "";
+            if (!repositoryInfo) {
+              url = getQueryUrl(reply.textInputValue);
+            } else {
+              const { remoteURL, branch, fileRelative } = repositoryInfo;
+              url = getQueryUrl(
+                reply.textInputValue,
+                remoteURL,
+                branch,
+                fileRelative
+              );
+            }
+            openUrlAndMaybeLog(url);
+          });
         }
       },
       (error) => {
@@ -85,7 +102,7 @@ nova.commands.register("com.harrytwyford.sourcegraph.open", (editor) => {
     return;
   }
 
-  const repoPromise = repoInfo(editor.document.uri.fsPath);
+  const repoPromise = repoInfo();
   repoPromise.then((repositoryInfo: RepositoryInfo | undefined) => {
     let url = "";
     if (!repositoryInfo) {
