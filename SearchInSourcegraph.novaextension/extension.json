@@ -5,8 +5,12 @@
   "description": "Search for code on Sourcegraph.",
   "repository": "https://github.com/htwyford/sourcegraph-nova",
   "bugs": "https://github.com/htwyford/sourcegraph-nova",
-  "version": "1.0",
+  "version": "1.1",
   "categories": ["commands"],
+
+  "entitlements": {
+    "process": true
+  },
 
   "main": "main.dist.js",
 
@@ -16,6 +20,12 @@
       "title": "Sourcegraph query URL",
       "type": "string",
       "default": "https://sourcegraph.com"
+    },
+    {
+      "key": "com.harrytwyford.sourcegraph.config.gitExecutable",
+      "title": "Path to git executable",
+      "type": "string",
+      "default": "/usr/bin/env git"
     }
   ],
 
@@ -25,6 +35,19 @@
       "title": "Sourcegraph query URL",
       "type": "string",
       "default": "https://sourcegraph.com"
+    },
+    {
+      "key": "com.harrytwyford.sourcegraph.config.defaultBranch",
+      "title": "Default branch",
+      "description": "Used when the current branch cannot be determined.",
+      "type": "string",
+      "default": "main"
+    },
+    {
+      "key": "com.harrytwyford.sourcegraph.config.gitExecutable",
+      "title": "Path to git executable",
+      "type": "string",
+      "default": "/usr/bin/env git"
     }
   ],
 
@@ -33,6 +56,10 @@
       {
         "title": "Search Selection on Sourcegraph",
         "command": "com.harrytwyford.sourcegraph.searchSelection"
+      },
+      {
+        "title": "Open on Sourcegraph",
+        "command": "com.harrytwyford.sourcegraph.open"
       },
       {
         "title": "Search on Sourcegraph…",

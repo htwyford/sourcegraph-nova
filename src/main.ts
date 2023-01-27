@@ -1,8 +1,11 @@
 import {
   emitNotification,
   openUrlAndMaybeLog,
-  getSourcegraphUrl,
+  getQueryUrl,
+  getOpenUrl,
 } from "./utils";
+
+import { repoInfo, RepositoryInfo } from "./git";
 
 nova.commands.register(
   "com.harrytwyford.sourcegraph.searchSelection",
@@ -24,18 +27,17 @@ nova.commands.register(
 
     const query = editor.getTextInRange(selectedRange);
 
-    const fullPath = nova.workspace.activeTextEditor?.document.path;
-    let relativePath;
-    if (fullPath && nova.workspace.path) {
-      relativePath = fullPath.replace(nova.workspace.path, "");
-    }
-
-    let url = `${getSourcegraphUrl()}` + `?search=${encodeURIComponent(query)}`;
-    if (relativePath) {
-      url = url + `&file=${encodeURIComponent(relativePath)}`;
-    }
-
-    openUrlAndMaybeLog(url);
+    const repoPromise = repoInfo();
+    repoPromise.then((repositoryInfo: RepositoryInfo | undefined) => {
+      let url = "";
+      if (!repositoryInfo) {
+        url = getQueryUrl(query);
+      } else {
+        const { remoteURL, branch, fileRelative } = repositoryInfo;
+        url = getQueryUrl(query, remoteURL, branch, fileRelative);
+      }
+      openUrlAndMaybeLog(url);
+    });
   }
 );
 
@@ -54,11 +56,25 @@ nova.commands.register(
     promise.then(
       (reply) => {
         if (reply.textInputValue) {
-          const url =
-            `${getSourcegraphUrl()}` +
-            `?search=${encodeURIComponent(reply.textInputValue)}`;
-
-          openUrlAndMaybeLog(url);
+          const repoPromise = repoInfo();
+          repoPromise.then((repositoryInfo: RepositoryInfo | undefined) => {
+            if (!reply.textInputValue) {
+              return;
+            }
+            let url = "";
+            if (!repositoryInfo) {
+              url = getQueryUrl(reply.textInputValue);
+            } else {
+              const { remoteURL, branch, fileRelative } = repositoryInfo;
+              url = getQueryUrl(
+                reply.textInputValue,
+                remoteURL,
+                branch,
+                fileRelative
+              );
+            }
+            openUrlAndMaybeLog(url);
+          });
         }
       },
       (error) => {
@@ -71,7 +87,6 @@ nova.commands.register(
   }
 );
 
-// TODO: Fetch remote URL and add it to the URL. Until that is done, this action is disabled.
 nova.commands.register("com.harrytwyford.sourcegraph.open", (editor) => {
   const fullPath = nova.workspace.activeTextEditor?.document.path;
   let relativePath;
@@ -87,15 +102,19 @@ nova.commands.register("com.harrytwyford.sourcegraph.open", (editor) => {
     return;
   }
 
-  // TODO: Nova returns oddly high values for editor.selectedRange. For the line below,
-  // we get the value [3219, 3219].
-  const lineRange = editor.getLineRangeForRange(editor.selectedRange);
-  openUrlAndMaybeLog(
-    `${getSourcegraphUrl()}` +
-      `?file=${encodeURIComponent(relativePath)}` +
-      `&start_row=${encodeURIComponent(lineRange.start)}` +
-      `&start_col=${encodeURIComponent(String(editor.selectedRange.start))}` +
-      `&end_row=${encodeURIComponent(String(lineRange.end))}` +
-      `&end_col=${encodeURIComponent(String(editor.selectedRange.end))}`
-  );
+  const repoPromise = repoInfo();
+  repoPromise.then((repositoryInfo: RepositoryInfo | undefined) => {
+    let url = "";
+    if (!repositoryInfo) {
+      emitNotification(
+        nova.localize("Unable to open on Sourcegraph"),
+        nova.localize("Cannot find repository information.")
+      );
+      return;
+    } else {
+      const { remoteURL, branch, fileRelative } = repositoryInfo;
+      url = getOpenUrl(remoteURL, branch, fileRelative, editor);
+    }
+    openUrlAndMaybeLog(url);
+  });
 });
